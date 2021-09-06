@@ -9,10 +9,34 @@
  * A szerver a megfelelő válaszokat küldje el a kliens felé
  */
 
-const httpError = require('http-errors');
+const createError = require('http-errors');
+
+const service = require('./building.service');
+
+exports.updateBuilding = (req, res, next) => {
+
+    if (!req.body.buildingId || !req.body.className) {
+        return next(new createError.BadRequest('Missing field'));
+    }
+
+    return service.update(req.body.buildingId, req.body.className)
+        .then(entity => {
+            res.json(entity);
+        })
+        .catch(err => {
+            console.error(err)
+            return next(new createError.InternalServerError('Could not updated building'));
+        });
+
+}
 
 
-exports.updateBuilding = (req, res, next) => {}
-
-
-exports.getAllBuildingWithClassrooms = () => {};
+exports.getAllBuildingWithClassrooms = (req, res, next) => {
+    return service.getAll()
+        .then(list => {
+            res.json(list);
+        }).catch(err => {
+            console.error(err);
+            return new createError.InternalServerError('Could not send the list')
+        })
+};
